@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.prime.optimize.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "WorldRendererMixin",
+    "ChunkRenderDispatcherMixin",
+    "MemoryOptimizationMixin",
+    "BlockEntityCullingMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
