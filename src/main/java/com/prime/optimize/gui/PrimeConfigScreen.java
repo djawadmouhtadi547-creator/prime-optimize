@@ -1,14 +1,18 @@
 package com.prime.optimize.gui;
 
-import com.prime.optimize.PrimeOptimize;
+import com.prime.optimize.PrimeOptimizeConfig;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.CyclingButtonWidget;
 import net.minecraft.text.Text;
 
 public final class PrimeConfigScreen extends Screen {
     private final Screen parent;
+    private ButtonWidget frustumButton;
+    private ButtonWidget lodButton;
+    private ButtonWidget blockEntityButton;
+    private ButtonWidget lodDistanceButton;
+    private ButtonWidget blockEntityDistanceButton;
 
     public PrimeConfigScreen(Screen parent) {
         super(Text.literal("Prime Optimize"));
@@ -17,57 +21,71 @@ public final class PrimeConfigScreen extends Screen {
 
     @Override
     protected void init() {
-        int centerX = this.width / 2;
-        int buttonWidth = Math.min(260, this.width - 24);
-        int buttonX = centerX - buttonWidth / 2;
-        int top = Math.max(44, this.height / 5);
+        int center = this.width / 2;
+        int y = 48;
+        int width = 260;
+        int height = 20;
+        int gap = 25;
 
-        this.addDrawableChild(CyclingButtonWidget.onOffBuilder(PrimeOptimize.aggressiveOcclusion)
-                .build(buttonX, top, buttonWidth, 20, Text.literal("Aggressive occlusion & block-entity culling"),
-                        (button, value) -> {
-                            PrimeOptimize.aggressiveOcclusion = value;
-                            PrimeOptimize.saveConfig();
-                        }));
+        frustumButton = addDrawableChild(ButtonWidget.builder(toggleText("Frustum helpers", PrimeOptimizeConfig.enableFrustumHelpers), b -> {
+            PrimeOptimizeConfig.enableFrustumHelpers = !PrimeOptimizeConfig.enableFrustumHelpers;
+            b.setMessage(toggleText("Frustum helpers", PrimeOptimizeConfig.enableFrustumHelpers));
+            PrimeOptimizeConfig.save();
+        }).dimensions(center - width / 2, y, width, height).build());
 
-        this.addDrawableChild(CyclingButtonWidget.onOffBuilder(PrimeOptimize.lodEnabled)
-                .build(buttonX, top + 26, buttonWidth, 20, Text.literal("Distant chunk LOD priority"),
-                        (button, value) -> {
-                            PrimeOptimize.lodEnabled = value;
-                            PrimeOptimize.saveConfig();
-                        }));
+        lodButton = addDrawableChild(ButtonWidget.builder(toggleText("Distance LOD scheduling", PrimeOptimizeConfig.enableDistanceLod), b -> {
+            PrimeOptimizeConfig.enableDistanceLod = !PrimeOptimizeConfig.enableDistanceLod;
+            b.setMessage(toggleText("Distance LOD scheduling", PrimeOptimizeConfig.enableDistanceLod));
+            PrimeOptimizeConfig.save();
+        }).dimensions(center - width / 2, y += gap, width, height).build());
 
-        this.addDrawableChild(CyclingButtonWidget.onOffBuilder(PrimeOptimize.memoryOptimizations)
-                .build(buttonX, top + 52, buttonWidth, 20, Text.literal("Chunk cache cleanup"),
-                        (button, value) -> {
-                            PrimeOptimize.memoryOptimizations = value;
-                            PrimeOptimize.saveConfig();
-                        }));
+        blockEntityButton = addDrawableChild(ButtonWidget.builder(toggleText("Block entity distance limit", PrimeOptimizeConfig.enableBlockEntityDistanceLimit), b -> {
+            PrimeOptimizeConfig.enableBlockEntityDistanceLimit = !PrimeOptimizeConfig.enableBlockEntityDistanceLimit;
+            b.setMessage(toggleText("Block entity distance limit", PrimeOptimizeConfig.enableBlockEntityDistanceLimit));
+            PrimeOptimizeConfig.save();
+        }).dimensions(center - width / 2, y += gap, width, height).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Done"), button -> close())
-                .dimensions(centerX - 100, this.height - 30, 200, 20)
-                .build());
+        lodDistanceButton = addDrawableChild(ButtonWidget.builder(lodDistanceText(), b -> {
+            PrimeOptimizeConfig.lodDistanceChunks = PrimeOptimizeConfig.lodDistanceChunks >= 16 ? 4 : PrimeOptimizeConfig.lodDistanceChunks + 2;
+            b.setMessage(lodDistanceText());
+            PrimeOptimizeConfig.save();
+        }).dimensions(center - width / 2, y += gap, width, height).build());
+
+        blockEntityDistanceButton = addDrawableChild(ButtonWidget.builder(blockEntityDistanceText(), b -> {
+            PrimeOptimizeConfig.maxBlockEntityDistance = PrimeOptimizeConfig.maxBlockEntityDistance >= 256 ? 64 : PrimeOptimizeConfig.maxBlockEntityDistance + 64;
+            b.setMessage(blockEntityDistanceText());
+            PrimeOptimizeConfig.save();
+        }).dimensions(center - width / 2, y += gap, width, height).build());
+
+        addDrawableChild(ButtonWidget.builder(Text.translatable("gui.done"), b -> close())
+            .dimensions(center - 100, this.height - 28, 200, 20).build());
+    }
+
+    private static Text toggleText(String name, boolean enabled) {
+        return Text.literal(name + ": " + (enabled ? "ON" : "OFF"));
+    }
+
+    private static Text lodDistanceText() {
+        return Text.literal("LOD distance: " + PrimeOptimizeConfig.lodDistanceChunks + " chunks");
+    }
+
+    private static Text blockEntityDistanceText() {
+        return Text.literal("Block entity range: " + PrimeOptimizeConfig.maxBlockEntityDistance + " blocks");
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
-
-        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("Prime Optimize"),
-                this.width / 2, 18, 0xFFFFFF);
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.literal("LOD priority distance: " + PrimeOptimize.lodDistanceChunks + " chunks"),
-                this.width / 2, Math.max(126, this.height / 5 + 82), 0xB8DFFF);
-        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("Development Credits"),
-                this.width / 2, this.height - 78, 0xFFD166);
-        context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("Prime  •  GMU Studios  •  djawad1"),
-                this.width / 2, this.height - 62, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 18, 0xFFFFFF);
+        int creditsY = height - 76;
+        context.drawCenteredTextWithShadow(textRenderer, Text.literal("Credits"), width / 2, creditsY, 0x66FFAA);
+        context.drawCenteredTextWithShadow(textRenderer, Text.literal("Prime  •  GMU Studios  •  djawad1"), width / 2, creditsY + 14, 0xFFFFFF);
     }
 
     @Override
     public void close() {
-        if (this.client != null) {
-            this.client.setScreen(this.parent);
-        }
+        PrimeOptimizeConfig.save();
+        if (client != null) client.setScreen(parent);
     }
 }

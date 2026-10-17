@@ -3,25 +3,23 @@
   "id": "prime_optimize",
   "version": "${version}",
   "name": "Prime Optimize",
-  "description": "Client-side rendering and memory-pressure optimizations for Minecraft 1.20.1.",
+  "description": "Client-side rendering helpers and lightweight optimization settings for Minecraft 1.20.1.",
   "authors": ["Prime", "GMU Studios", "djawad1"],
-  "contact": {
-    "sources": "https://github.com/"
-  },
   "license": "MIT",
   "environment": "client",
   "entrypoints": {
-    "client": ["com.prime.optimize.PrimeOptimize"],
+    "client": ["com.prime.optimize.PrimeOptimizeClient"],
     "modmenu": ["com.prime.optimize.ModMenuIntegration"]
   },
   "mixins": ["prime_optimize.mixins.json"],
   "depends": {
-    "fabricloader": ">=0.15.0",
+    "fabricloader": ">=0.14.22",
     "minecraft": "1.20.1",
     "java": ">=17",
     "fabric-api": "*"
   },
   "suggests": {
-    "modmenu": ">=7.2.0"
+    "modmenu": "*",
+    "sodium": "*"
   }
 }

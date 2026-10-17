@@ -11,9 +11,8 @@ base {
 }
 
 repositories {
-    mavenCentral()
-    maven { url = 'https://maven.fabricmc.net/' }
     maven { url = 'https://maven.terraformersmc.com/releases/' }
+    mavenCentral()
 }
 
 dependencies {
@@ -21,8 +20,6 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    // Compile against Mod Menu, but keep it optional for players who do not install it.
     modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
@@ -34,19 +31,11 @@ processResources {
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
     withSourcesJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.release = 17
     options.encoding = 'UTF-8'
-}
-
-jar {
-    from('LICENSE') {
-        rename { "${it}_${project.base.archivesName.get()}" }
-    }
 }
